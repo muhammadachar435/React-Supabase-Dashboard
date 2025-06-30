@@ -1,0 +1,36 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
+@import "tailwindcss" important;
+
+@theme {
+  --breakpoint-*: initial;
+  --breakpoint-sm: 20rem;
+  --breakpoint-mymob: 23rem;
+  --breakpoint-myiphone: 26rem;
+  --breakpoint-tablet: 47rem;
+  --breakpoint-ipad: 50rem;
+  --breakpoint-desktop: 60rem;
+  --breakpoint-xll: 70rem;
+  --breakpoint-mypc: 75rem;
+  --breakpoint-mylap: 86rem;
+  --breakpoint-biglap: 160rem;
+  --breakpoint-biglp: 190rem;
+}
+@theme {
+  --font-Inter: "Inter", sans-serif;
+  --font-Roboto: "Roboto", sans-serif;
+}
+@layer utilities {
+  .navbar {
+    background-color: red;
+  }
+  body.light-mode {
+    background: linear-gradient(to right, #f6f7f9 0%, #f6f7f9 100%);
+    color: black;
+  }
+
+  /* Dark Mode */
+  body.dark-mode {
+    background-color: #0a0e15;
+    color: white;
+  }
+}
