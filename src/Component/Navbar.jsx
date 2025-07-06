@@ -5,20 +5,22 @@ import {
   MdDarkMode,
   MdLightMode,
 } from "react-icons/md";
-{
-  // <MdLightMode />
-  /* <MdDarkMode /> */
-}
+
 import { Link, useLoaderData, useLocation } from "react-router-dom";
 import SidebarData from "./SidebarData";
 import Logo from "../Pictures/Logo.png";
 import Loginimg from "../Pictures/Loginimg.png";
 import Githublogo from "../Pictures/github.png";
-import Dashboard from "../Pages/Dashboard";
+import { FaGreaterThan } from "react-icons/fa";
+import { IoIosSettings } from "react-icons/io";
+import { CgProfile } from "react-icons/cg";
+import { MdHelp } from "react-icons/md";
+import { RiLogoutBoxRFill } from "react-icons/ri";
 
-function Navbar({ darkMode, setDarkMode, email }) {
+// Navbar
+function Navbar({ darkMode, setDarkMode, firstName }) {
   const [sidebar, setSidebar] = useState(false);
-  const [userEmail, setUserEmail] = useState("");
+  const [firstname, setfirstname] = useState("");
   const [showprofile, setProfile] = useState(false);
   const profileRef = useRef(null);
   useEffect(() => {
@@ -35,11 +37,12 @@ function Navbar({ darkMode, setDarkMode, email }) {
   }, []);
 
   useEffect(() => {
-    const email = localStorage.getItem("userEmail");
-    if (email) {
-      setUserEmail(email);
+    const firstNme = localStorage.getItem("firstName");
+    if (firstNme) {
+      setfirstname(firstNme);
     }
   }, []);
+
   const location = useLocation();
   useEffect(() => {
     document.body.className = darkMode ? "dark-mode" : "light-mode";
@@ -96,41 +99,107 @@ function Navbar({ darkMode, setDarkMode, email }) {
             <div
               ref={profileRef}
               className={`${
-                darkMode ? "text-black bg-slate-300" : "text-black"
-              } absolute top-18 rounded-lg right-4 sm:w-40 sm:h-18  tablet:w-48 h-20 p-1 shadow-lg text-black`}
-              style={{
-                backgroundImage:
-                  "linear-gradient(to right, #74ebd5 0%, #9face6 100%);",
-              }}
-              onMouseLeave={() => setProfile(false)}
+                darkMode
+                  ? " text-black bg-white"
+                  : "text-slate-100 bg-[rgba(50,50,50,0.8)] "
+              } absolute top-18  right-4 sm:w-52 sm:h-64 rounded-xl   tablet:w-52 h p-2 shadow-xl text-black`}
+              // onMouseLeave={() => setProfile(false)}
             >
-              <ul className="font-Inter relative p-1 ">
-                <li className="  text-xs text-sans sm:flex tablet:hidden ">
-                  {userEmail.slice(0, 20)}
-                </li>
-                <li className="  text-xs text-sans sm:flex tablet:hidden ">
-                  {userEmail.slice(20, 35)}
-                </li>
-                <li className="  text-xs text-sans hidden tablet:flex">
-                  {userEmail.slice(0, 25)}
-                </li>
-                <li className=" text-xs text-sans border-b border-dashed hidden tablet:flex">
-                  {userEmail.slice(25, 35)}
-                </li>
+              {/* img div */}
+              <div className="flex   space-x-4 pb-2 border-b border-slate-500 items-center">
+                <img src={Loginimg} alt="" className="w-10 h-10 rounded-full" />
+                <p className="text-[14px] font-Inter ">{firstname}</p>
+              </div>
+              {/* Link  */}
+              <div>
+                {/* 1st div */}
+                <div className="flex justify-between items-center mt-2 mr-[2px] hover:bg-slate-200 p-1 rounded-md">
+                  <div className=" flex items-center space-x-2">
+                    <span className="p-[2px] bg-[#e5e5e5] rounded-full">
+                      <CgProfile className="w-6 h-6 text-[#535353]" />
+                    </span>
+                    <Link
+                      className={`${
+                        darkMode
+                          ? "duration-200 transition-all"
+                          : "active:text-black duration-200 transition-all"
+                      } text-sm font-Roboto`}
+                    >
+                      Edit Profile
+                    </Link>
+                  </div>
+                  <span>
+                    <FaGreaterThan className="text-xs font-normal text-gray-400" />
+                  </span>
+                </div>
+                {/*1st end div */}
+                {/* 2nd div */}
+                <div className=" flex justify-between items-center mt-2 mr-[2px] hover:bg-slate-200 p-1 rounded-md">
+                  <div className="   flex items-center space-x-2">
+                    <span className="p-[2px] bg-[#e5e5e5] rounded-full">
+                      <IoIosSettings className="w-6 h-6 text-[#535353]" />
+                    </span>
+                    <Link
+                      className={`${
+                        darkMode
+                          ? "duration-200 transition-all"
+                          : "active:text-black duration-200 transition-all"
+                      } text-sm font-Roboto`}
+                    >
+                      Setting & Privacy
+                    </Link>
+                  </div>
+                  <span>
+                    <FaGreaterThan className="text-xs font-normal text-gray-400" />
+                  </span>
+                </div>
+                {/* 2nd end div */}
+                {/* 3rd div */}
+                <div className="flex justify-between items-center mt-2 mr-[2px] hover:bg-slate-200 p-1 rounded-md">
+                  <div className="flex items-center space-x-2">
+                    <span className="p-[2px] bg-[#e5e5e5] rounded-full">
+                      <MdHelp className="w-6 h-6 text-[#535353]  " />
+                    </span>
+                    <Link
+                      className={`${
+                        darkMode
+                          ? "duration-200 transition-all"
+                          : "active:text-black duration-200 transition-all"
+                      } text-sm font-Roboto`}
+                    >
+                      Help & Support
+                    </Link>
+                  </div>
+                  <span>
+                    <FaGreaterThan className="text-xs font-normal text-gray-400" />
+                  </span>
+                </div>
+                {/* 3rd end div */}
+                {/* 4th div */}
+                <div className="flex justify-between items-center mt-2 mr-[2px] hover:bg-slate-200 p-1 rounded-md">
+                  <div className="flex items-center space-x-2">
+                    <span className="p-[2px] bg-[#e5e5e5] rounded-full">
+                      <RiLogoutBoxRFill className="w-6 h-6 text-[#535353]" />
+                    </span>
+                    <Link
+                      to="/login"
+                      className={`${
+                        darkMode
+                          ? "duration-200 transition-all"
+                          : "active:text-black duration-200 transition-all"
+                      } text-sm font-Roboto`}
+                    >
+                      Logout
+                    </Link>
+                  </div>
+                  <span>
+                    <FaGreaterThan className="text-xs font-normal text-gray-400" />
+                  </span>
+                </div>
+                {/* 4th end div */}
+              </div>
 
-                <li className="sm:mt-[4px] sm:mx-10 tablet:mt-3 ">
-                  <Link
-                    to="/Login"
-                    className="sm:text-sm tablet:text-base  hover:bg-gray-300 text-gray-700 mx-auto px-3 py-1 rounded-lg shadow-sm transition duration-300 ease-in-out"
-                    style={{
-                      backgroundImage:
-                        "linear-gradient(180deg, #2af598 0%, #009efd 100%)",
-                    }}
-                  >
-                    Logout
-                  </Link>
-                </li>
-              </ul>
+              {/* end link */}
             </div>
           )}
           <Link to="https://github.com/muhammadachar435" target="blank">
@@ -163,7 +232,7 @@ function Navbar({ darkMode, setDarkMode, email }) {
         <ul className="flex flex-col mt-8 space-y-4">
           {SidebarData.map((item, index) => {
             const isActive = location.pathname === item.path;
-            console.log(item, index);
+
             return (
               <li key={index} className="w-full">
                 <Link

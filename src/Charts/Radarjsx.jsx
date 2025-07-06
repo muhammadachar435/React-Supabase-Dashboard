@@ -4,12 +4,14 @@ import ChartDataLabels from "chartjs-plugin-datalabels";
 
 Chart.register(ChartDataLabels); // Register the plugin
 
-const Radarjsx = () => {
+const Radarjsx = ({ darkMode }) => {
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
 
   useEffect(() => {
     const ctx = chartRef.current.getContext("2d");
+
+    const legendLabelColor = darkMode ? "white" : "black";
 
     if (chartInstanceRef.current) {
       chartInstanceRef.current.destroy();
@@ -31,26 +33,22 @@ const Radarjsx = () => {
             label: "Series 1",
             data: [35, 59, 9, 80, 46, 55],
             fill: true,
-            backgroundColor: "#b2dfdb",
-            borderColor: "#3673b4",
-            pointBackgroundColor: "#b2dfdb",
+            borderColor: "#0f73d9",
+            pointBackgroundColor: "#0f73d9",
           },
-
           {
             label: "Series 2",
             data: [28, 48, 40, 19, 96, 27],
             fill: true,
-            backgroundColor: "#fff59d",
-            borderColor: "#1d80b3",
-            pointBackgroundColor: "#fff59d",
+            borderColor: "#e56f0d",
+            pointBackgroundColor: "#e56f0d",
           },
           {
             label: "Series 3",
             data: [38, 78, 10, 69, 76, 77],
             fill: true,
-            backgroundColor: "#ffcc80",
-            borderColor: "#cf7529",
-            pointBackgroundColor: "#ffcc80",
+            borderColor: "#0389c9",
+            pointBackgroundColor: "#0389c9",
           },
         ],
       },
@@ -64,11 +62,14 @@ const Radarjsx = () => {
             beginAtZero: true,
             suggestedMin: 0,
             suggestedMax: 100,
+            grid: {
+              color: "#ccc",
+            },
             pointLabels: {
               font: {
-                size: 7,
+                size: 9,
               },
-              color: "#000",
+              color: "slategray",
             },
           },
         },
@@ -80,10 +81,37 @@ const Radarjsx = () => {
               usePointStyle: true,
               pointStyle: "circle",
               font: {
-                size: 9,
+                size: 10,
               },
-              color: "#333",
+              color: legendLabelColor, // dynamic based on darkMode prop
               padding: 20,
+            },
+          },
+          tooltip: {
+            backgroundColor: "rgba(255, 255, 255, 0.5)", // white bg with opacity
+            titleColor: "#000", // black title
+            bodyColor: "#000", // black body
+            borderColor: "#ccc",
+            borderWidth: 1,
+            callbacks: {
+              label: function (context) {
+                const label = context.dataset.label || "";
+                const value = context.parsed.r;
+                const index = context.dataIndex;
+
+                // Total from all datasets at the same point
+                const chart = context.chart;
+                const total = chart.data.datasets.reduce((sum, dataset) => {
+                  const val = dataset.data[index];
+                  return sum + (typeof val === "number" ? val : 0);
+                }, 0);
+
+                const percentage = total
+                  ? ((value / total) * 100).toFixed(1)
+                  : "0.0";
+
+                return `${label}: ${percentage}%`;
+              },
             },
           },
           datalabels: {
@@ -93,9 +121,6 @@ const Radarjsx = () => {
             align: "top",
             offset: 6,
           },
-          font: {
-            size: 8, // 👈 Make this number smaller or bigger as needed
-          },
         },
       },
       plugins: [ChartDataLabels],
@@ -104,15 +129,13 @@ const Radarjsx = () => {
     return () => {
       chartInstanceRef.current?.destroy();
     };
-  }, []);
+  }, [darkMode]);
 
   return (
-    <>
-      <div className="relative flex justify-center mt-4  sm:w-[250px] mymob:w-[290px] mymob:h-[240px] myiphone:w-[342px] myiphone:mx-auto tablet:w-[320px] tablet:h-[320px] desktop:w-[430px] desktop:h-[290px]  xll:w-[430px] xll:h-[300px] biglap:w-[650px] biglap:h-[425px] mx-auto p-1 rounded-lg">
-        <canvas ref={chartRef} className="" />
-        <div className="border border-dashed sm:w-60 mymob:w-[280px] myiphone:w-[336px] tablet:w-[310px] desktop:w-[416px] absolute bottom-8 text-slate-300"></div>
-      </div>
-    </>
+    <div className="relative flex justify-center mt-4 sm:w-[250px] mymob:w-[290px] mymob:h-[240px] myiphone:w-[342px] myiphone:mx-auto tablet:w-[320px] tablet:h-[320px] tablet:mt-8 desktop:w-[440px] desktop:h-[350px]  xll:w-[360px] xll:h-auto biglap:w-[650px] biglap:h-[425px] mx-auto p-1 rounded-lg">
+      <canvas ref={chartRef} />
+      <div className="border border-dashed sm:w-60 mymob:w-[280px] myiphone:w-[336px] tablet:w-[310px] desktop:w-[416px] absolute bottom-8 text-slate-300"></div>
+    </div>
   );
 };
 

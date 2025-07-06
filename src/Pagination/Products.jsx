@@ -5,14 +5,14 @@ import CartModel from "./UI/CartModel";
 import Cart from "./UI/Cart";
 import { GiShoppingCart } from "react-icons/gi";
 import { useCart } from "./CartProvider";
-import { FaGreaterThan } from "react-icons/fa6";
-import { FaLessThan } from "react-icons/fa";
+import { FaLessThan, FaGreaterThan } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 
 function Products({ darkMode }) {
   const [productData, setProductData] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortOrder, setSortOrder] = useState("default"); // NEW: sort order state
+  const [sortOrder, setSortOrder] = useState("default");
   const itemsPerPage = 6;
   const [showcart, setshowcart] = useState(false);
   const { cart } = useCart();
@@ -25,27 +25,18 @@ function Products({ darkMode }) {
 
   useEffect(() => {
     const fetchData = async () => {
-      const fetchPromise = axios.get("https://fakestoreapi.com/products");
-
-      toast.promise(
-        fetchPromise,
-        {
-          pending: "Loading products...",
-          success: "Products loaded successfully!",
-          error: "Failed to load products",
-        },
-        { autoClose: 1000 }
-      );
-
+      setLoading(true); // start loading
       try {
-        const response = await fetchPromise;
-
-        // Delay before showing data (e.g. 2 seconds)
-        setTimeout(() => {
-          setProductData(response.data);
-        }, 1000);
+        const response = await axios.get("https://fakestoreapi.com/products");
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // optional delay for UX demo
+        setProductData(response.data || []);
+        toast.success("Products loaded successfully!", { autoClose: 500 });
       } catch (err) {
         console.log(err.message);
+        setProductData([]);
+        toast.error("Failed to load products", { autoClose: 500 });
+      } finally {
+        setLoading(false); // end loading
       }
     };
 
@@ -57,15 +48,15 @@ function Products({ darkMode }) {
     document.documentElement.style.overflowY = showcart ? "hidden" : "scroll";
   }, [showcart]);
 
-  // Calculate pagination
-  const totalPages = Math.ceil(productData.length / itemsPerPage);
+  // Calculate pagination safely
+  const totalPages = Math.ceil((productData?.length || 0) / itemsPerPage);
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
 
   // Sort products based on sortOrder
   let sortedProducts = [...productData];
   if (sortOrder === "lowToHigh") {
-    sortedProducts.sort((a, b) => a.price - b.price); // if a greater than b +ve Value so b before than a
+    sortedProducts.sort((a, b) => a.price - b.price);
   } else if (sortOrder === "highToLow") {
     sortedProducts.sort((a, b) => b.price - a.price);
   }
@@ -97,18 +88,20 @@ function Products({ darkMode }) {
 
         {showcart && (
           <CartModel closecart={closecart} darkMode={darkMode}>
-            <Cart />
+            <Cart darkMode={darkMode} />
             <ToastContainer />
           </CartModel>
         )}
-
-        {/* Sorting Dropdown */}
       </header>
+
+      {/* Sorting Dropdown */}
       <div className="flex justify-end mt-5 mr-2">
         <select
           value={sortOrder}
           onChange={(e) => setSortOrder(e.target.value)}
-          className="px-2 py-1 bg-green-600 text-white rounded text-sm"
+          className={` ${
+            darkMode ? "bg-[#535252] text-white" : "bg-white text-black"
+          } px-2 py-1 font-sans rounded text-sm outline-none`}
         >
           <option value="default">Filter</option>
           <option value="lowToHigh">Low to High</option>
@@ -116,22 +109,35 @@ function Products({ darkMode }) {
         </select>
       </div>
 
-      {/* Product Grid */}
+      {/* Loading Spinner */}
+      {loading && (
+        <div className="flex justify-center items-center my-10">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+          <p className="ml-2 font-semibold text-blue-500">
+            Loading products...
+          </p>
+        </div>
+      )}
 
+      {/* Product Grid */}
       <div className="grid sm:grid-cols-1 tablet:grid-cols-2 tablet:gap-x-20 tablet:gap-y-5 tablet:w-[620px] tablet:ml-auto tablet:mr-auto desktop:grid-cols-3 desktop:w-[900px] xll:grid-cols-3 xll:w-[1100px] xll:gap-x-10 biglap:grid-cols-6 biglap:w-[2000px] biglap:gap-x-8">
-        {currentProducts.map((product) => (
-          <Product key={product.id} {...product} />
-        ))}
+        {!loading &&
+          currentProducts.map((product) => (
+            <Product key={product.id} {...product} darkMode={darkMode} />
+          ))}
       </div>
 
       {/* Pagination Controls */}
-
-      {productData.length > 0 && (
+      {productData?.length > 0 && !loading && (
         <div className="sm:mt-10 sm:flex sm:gap-1 sm:justify-center mymob:gap-x-3 tablet:mt-20 tablet:flex tablet:justify-center tablet:gap-2 tablet:gap-x-20 flex-wrap">
           <button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
-            className="px-3 py-1 bg-blue-800 text-white cursor-pointer rounded-md w-9 flex justify-center items-center h-9 disabled:opacity-50"
+            className={`${
+              darkMode
+                ? "text-white active:bg-blue-600 w-9 h-9 rounded-full active:text-white"
+                : "text-black active:bg-blue-600 w-9 h-9 rounded-full active:text-white"
+            } cursor-pointer text-base rounded-md flex justify-center items-center disabled:opacity-50`}
           >
             <FaLessThan />
           </button>
@@ -143,8 +149,8 @@ function Products({ darkMode }) {
                 onClick={() => setCurrentPage(pageNum)}
                 className={`px-3 py-1 rounded-full cursor-pointer font-Roboto ${
                   pageNum === currentPage
-                    ? "bg-blue-500 text-black"
-                    : "bg-slate-200"
+                    ? "bg-blue-500 text-white"
+                    : "bg-slate-400 text-white"
                 }`}
               >
                 {pageNum}
@@ -157,7 +163,11 @@ function Products({ darkMode }) {
               setCurrentPage((prev) => Math.min(prev + 1, totalPages))
             }
             disabled={currentPage === totalPages}
-            className="px-3 py-1 bg-blue-800 cursor-pointer text-white active:text-black disabled:opacity-50 rounded-md w-9 flex justify-center items-center h-9 active:bg-blue-600"
+            className={`${
+              darkMode
+                ? "text-white active:bg-blue-600 w-9 h-9 rounded-full active:text-white"
+                : "text-black active:bg-blue-600 w-9 h-9 rounded-full active:text-white"
+            } text-base cursor-pointer disabled:opacity-50 rounded-md flex justify-center items-center`}
           >
             <FaGreaterThan />
           </button>

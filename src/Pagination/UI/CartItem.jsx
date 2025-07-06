@@ -4,12 +4,20 @@ import { FaPlus } from "react-icons/fa6";
 import { FaMinus } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 
-function CartItem({ id, title, price, quantity, image }) {
+function CartItem({ id, title, price, quantity, image, darkMode }) {
   const { quantityDecrease, quanityIncrease, itemDelete } = useCart();
 
   return (
-    <div className="border-b border-dashed sm:mt-2 tablet:flex tablet:items-center tablet:space-x-20 tablet:space-y-12 tablet:justify-between tablet:mb-10 tablet:mt-10 desktop:space-x-40 desktop:p-1 ">
-      <div className="tablet:flex tablet:items-center tablet:space-x-12 biglap:space-x-64">
+    <div
+      className={`  ${
+        darkMode ? "bg-[#1e1e1e] text-white " : "bg-white text-black "
+      }border-b border-dashed sm:mt-2 tablet:flex tablet:items-center tablet:space-x-20 tablet:space-y-12 tablet:justify-between tablet:mb-10 tablet:mt-10 desktop:space-x-40 desktop:p-1 `}
+    >
+      <div
+        className={`   ${
+          darkMode ? "bg-[#1e1e1e] text-white " : "bg-white text-black "
+        } tablet:flex tablet:items-center tablet:space-x-12 biglap:space-x-64`}
+      >
         <div className=" p-1 mx-auto">
           <img
             src={image}

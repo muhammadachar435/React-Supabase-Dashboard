@@ -3,7 +3,7 @@ import { useCart } from "../CartProvider";
 import CartItem from "./CartItem";
 import { ToastContainer, toast } from "react-toastify";
 
-function Cart() {
+function Cart({ darkMode }) {
   const { cart, clearCart } = useCart();
 
   const totalAMount = cart.reduce((acc, item) => {
@@ -22,7 +22,13 @@ function Cart() {
 
   if (cart.length === 0) {
     return (
-      <h1 className="flex justify-center items-center mt-40 sm:text-2xl tablet:text-5xl font-Inter">
+      <h1
+        className={` ${
+          darkMode
+            ? "bg-[#1e1e1e] text-white rounded-2xl "
+            : "bg-white text-black rounded-2xl"
+        }  flex justify-center items-center mt-40 font-semibold sm:text-2xl tablet:text-5xl font-Inter`}
+      >
         Cart is Empty
       </h1>
     );
@@ -30,7 +36,11 @@ function Cart() {
 
   return (
     <>
-      <div className="sm:border-b-2 sm:border-solid tablet:border-none text-2xl font-Inter font-bold mb-4 text-yellow-500">
+      <div
+        className={`  ${
+          darkMode ? "bg-[#1e1e1e] text-white " : " text-black  "
+        }  tablet:border-none text-3xl sm:mb-10 font-Inter font-bold tablet:mb-4 text-yellow-500`}
+      >
         <h1>My Cart</h1>
       </div>
       <div>
@@ -39,6 +49,7 @@ function Cart() {
             <CartItem
               key={cartitem.id}
               {...cartitem}
+              darkMode={darkMode}
               totalAMount={totalAMount}
             />
           );

@@ -1,395 +1,353 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "../Database/Supabase";
+import { FaPlus } from "react-icons/fa";
+import { MdDeleteOutline, MdModeEditOutline, MdDelete } from "react-icons/md";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { MdDelete, MdModeEditOutline } from "react-icons/md";
-import { ToastContainer, toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import img1 from "../Pictures/profile2.png";
+import img2 from "../Pictures/user18.png";
 import AddAgentModal from "../AgentComponent/AddAgentModal";
 import EditAgentModal from "../AgentComponent/EditAgentModal";
-import { FaPlus } from "react-icons/fa";
-import imgprofile from "../Pictures/loginimg.png";
-import profile1 from "../assets/profile1.png";
-import profile2 from "../assets/profile2.png";
-import profile3 from "../assets/profile3.png";
 
 function Agents({ darkMode }) {
-  const [agents, setAgents] = useState([]);
-  const [formData, setFormData] = useState({
-    name: "",
-    company: "",
-    role: "",
-    mobile: "",
-    verified: false,
-    status: "",
-    profile: "",
+  const [AgentData, setAgentData] = useState([]);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const [showAddModal, setShowModal] = useState(false);
+  const [showEditModal, setEditModal] = useState(false);
+  const [SelectedOrder, setSelectedOrder] = useState([]);
+  const [searchquery, setSearchQuery] = useState("");
+  const [Agentinsert, setAgentinsert] = useState({
+    Agentname: "",
+    Company: "",
+    Phoneno: "",
+    Role: "",
+    Verified: "",
+    Status: "",
   });
-  const [formErrors, setFormErrors] = useState({});
-  const [editingIndex, setEditingIndex] = useState(-1);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [openMenuIndex, setOpenMenuIndex] = useState(-1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedAgents, setSelectedAgents] = useState([]);
-  const [selectAll, setSelectAll] = useState(false);
-
-  const menuRef = useRef(null);
+  const [Agent2, setAgent2] = useState({
+    id: "",
+    Agentname: "",
+    Company: "",
+    Role: "",
+    Phoneno: "",
+    Verified: "",
+    Status: "",
+  });
 
   useEffect(() => {
-    const savedAgents = JSON.parse(localStorage.getItem("agents"));
-    if (savedAgents && savedAgents.length > 0) {
-      setAgents(savedAgents);
-    } else {
-      const initialData = [
-        {
-          name: "Ali Khan",
-          company: "Tech Solutions",
-          role: "Project Manager",
-          mobile: "03001234567",
-          verified: true,
-          status: "Active",
-          profile: profile2,
-        },
-        {
-          name: "Sara Ahmed",
-          company: "SoftDev",
-          role: "Web Developer",
-          mobile: "03111234567",
-          verified: false,
-          status: "Locked",
-          profile: profile1,
-        },
-        {
-          name: "JOhn",
-          company: "ProCodg",
-          role: "Python Developer",
-          mobile: "03111234567",
-          verified: false,
-          status: "Locked",
-          profile: profile3,
-        },
-        {
-          name: "Micheal",
-          company: "SoftDev",
-          role: "Web Developer",
-          mobile: "03111234567",
-          verified: true,
-          status: "Active",
-          profile: profile1,
-        },
-        {
-          name: "Zain",
-          company: "SoftDev",
-          role: "Project Manager",
-          mobile: "03111234237",
-          verified: false,
-          status: "Locked",
-          profile: profile3,
-        },
-      ];
-      setAgents(initialData);
-    }
+    AgentfetchData();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("agents", JSON.stringify(agents));
-  }, [agents]);
+  const AgentfetchData = async () => {
+    const { data } = await supabase
+      .from("Agents")
+      .select("*")
+      .order("id", { ascending: true });
 
+    setAgentData(data);
+  };
+
+  const rowCount = AgentData.length;
+  const rowHeight = 65;
+  const maxHeight = rowCount * rowHeight;
+
+  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setOpenMenuIndex(-1);
+      if (
+        !event.target.closest(".menu-button") &&
+        !event.target.closest(".menu-options")
+      ) {
+        setOpenMenuId(null);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
-  const validate = () => {
-    let errors = {};
-    if (!formData.name) errors.name = true;
-    if (!formData.company) errors.company = true;
-    if (!formData.role) errors.role = true;
-    if (!formData.mobile) errors.mobile = true;
-    if (!formData.status) errors.status = true;
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+  const handleDelete = async (UserId) => {
+    const { data, error } = await supabase
+      .from("Agents")
+      .delete()
+      .eq("id", UserId);
 
-  const handleAdd = () => {
-    if (!validate()) {
-      toast.error("All fields are required", { autoClose: 500 });
-      return;
+    AgentfetchData();
+
+    if (data) {
+      console.log(data);
     }
-    setAgents([formData, ...agents]);
-    toast.success("Agent added successfully!", { autoClose: 500 });
-    setTimeout(() => setShowAddModal(false), 500);
-    setFormData({
-      name: "",
-      company: "",
-      role: "",
-      mobile: "",
-      verified: false,
-      status: "",
-      profile: "",
-    });
-    setFormErrors({});
-  };
-
-  const handleEdit = (index) => {
-    setEditingIndex(index);
-    setFormData(agents[index]);
-    setFormErrors({});
-    setShowEditModal(true);
-    setOpenMenuIndex(-1);
-  };
-
-  const handleUpdate = () => {
-    if (!validate()) {
-      toast.error("All fields are required", { autoClose: 500 });
-      return;
-    }
-    const updatedAgents = [...agents];
-    updatedAgents[editingIndex] = formData;
-    toast.success("Agent updated successfully!", { autoClose: 800 });
-    setAgents(updatedAgents);
-    setTimeout(() => setShowEditModal(false), 500);
-    setFormData({
-      name: "",
-      company: "",
-      role: "",
-      mobile: "",
-      verified: false,
-      status: "",
-      profile: "",
-    });
-    setFormErrors({});
-    setEditingIndex(-1);
-  };
-
-  const handleDelete = (index) => {
-    const updatedAgents = agents.filter((_, i) => i !== index);
-    setAgents(updatedAgents);
-    toast.success("Agent deleted successfully!", { autoClose: 800 });
-  };
-
-  const handleDeleteSelected = () => {
-    if (selectedAgents.length === 0) {
-      toast.error("No agents selected", { autoClose: 500 });
-      return;
-    }
-    const updatedAgents = agents.filter(
-      (_, index) => !selectedAgents.includes(index)
-    );
-    setAgents(updatedAgents);
-    setSelectedAgents([]);
-    setSelectAll(false);
-    toast.success("Selected agents deleted", { autoClose: 800 });
-  };
-
-  const toggleMenu = (index) => {
-    setOpenMenuIndex(openMenuIndex === index ? -1 : index);
-  };
-
-  const handleSelectAgent = (index) => {
-    if (selectedAgents.includes(index)) {
-      setSelectedAgents(selectedAgents.filter((i) => i !== index));
-    } else {
-      setSelectedAgents([...selectedAgents, index]);
+    if (error) {
+      console.log(error);
     }
   };
 
-  const handleSelectAll = () => {
-    if (selectAll) {
-      setSelectedAgents([]);
-    } else {
-      setSelectedAgents(agents.map((_, index) => index));
-    }
-    setSelectAll(!selectAll);
-  };
-
-  useEffect(() => {
-    setSelectAll(
-      selectedAgents.length === agents.length && agents.length !== 0
-    );
-  }, [selectedAgents, agents]);
-
-  const filteredAgents = agents.filter(
-    (agent) =>
-      agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      agent.company.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // const tableHeight = `${Math.max(filteredAgents.length, 1) * 55}px`;
-  let visibleRows = filteredAgents.length;
-
-  if (visibleRows >= 2) {
-    visibleRows += 1; // increase by +1 after 2 rows
+  async function AgentSubmit() {
+    await supabase.from("Agents").insert([Agentinsert]);
+    AgentfetchData();
+    toast.success("Data Store Successfully", { autoClose: 500 });
   }
 
-  const tableHeight = `${visibleRows * 55 + 110}px`;
-  return (
-    <div className=" ml-13 sm:w-[260px] mt-20 mymob:w-[320px] myiphone:w-[375px] tablet:ml-16 tablet:w-[690px] desktop:w-[950px]  xll:ml-17 xll:min-w-[1190px] mypc:w-[1250px] mylap:w-[1360px] biglap:w-[2450px] biglap:ml-18 mb-10">
-      <div className="flex flex-col  sm:flex-row justify-between items-center mb-4 tablet:mb-8 ">
-        <h2 className="text-xl  sm:text-2xl tablet:text-3xl font-bold font-Inter mb-4 sm:mb-0">
-          Agents
-        </h2>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="bg-blue-600 flex items-center sm:space-x-1 tablet:space-x-3 font-Inter text-white px-4 py-2 rounded hover:bg-blue-700 w-full sm:w-auto"
-        >
-          <span>
-            <FaPlus />
-          </span>
-          <span className="uppercase">New Agent</span>
-        </button>
-      </div>
-      <div className="bg-white p-2 shadow-lg rounded-md">
-        <div className="sm:flex sm:justify-between sm:items-center  mymob:pr-2 mt-6 mb-10">
-          <input
-            type="text"
-            placeholder="Search Agent..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={` ${
-              darkMode ? "text-black" : "text-black transparent"
-            } p-2 ring rounded mymob:ml-1 tablet:ml-3 sm:w-56 mymob:w-60 myiphone:w-68 tablet:w-72 desktop:h-12`}
-          />
+  const handleDeleteSelected = async () => {
+    if (SelectedOrder.length === 0) {
+      toast.warn("Selected Order Empty", { autoClose: 500 });
+      return;
+    }
+    const { data, error } = await supabase
+      .from("Agents")
+      .delete()
+      .in("id", SelectedOrder);
 
+    if (error) {
+      console.log(error);
+    } else {
+    }
+    setSelectedOrder([]);
+    AgentfetchData();
+  };
+
+  return (
+    <>
+      <div className="sm:mb-20 tablet:mb-36  ml-13 sm:w-[260px] sm:h-[420px] mt-20 mymob:w-[320px] myiphone:w-[375px] tablet:ml-16 tablet:w-[690px] desktop:w-[950px] xll:ml-17 xll:min-w-[1190px] mypc:w-[1250px] mylap:w-[1360px] biglap:w-[2450px] biglap:ml-18">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 tablet:mb-8">
+          <h2 className="text-xl sm:text-2xl tablet:text-3xl font-bold font-Inter mb-4 sm:mb-0">
+            Agents
+          </h2>
           <button
-            onClick={handleDeleteSelected}
-            className="bg-blue-400 text-white cursor-pointer  sm:w-6 p-1 rounded hover:bg-red-500 desktop:text-2xl desktop:w-8 "
+            className={` ${
+              darkMode ? "text-white " : "text-black hover:text-white"
+            }  bg-[#8fcaf9] hover:cursor-pointer flex items-center sm:space-x-1 tablet:space-x-3 px-4 py-2 rounded hover:bg-blue-600 w-full sm:w-auto`}
+            onClick={() => {
+              setShowModal(!showAddModal);
+            }}
           >
-            <MdDelete />
+            <span>
+              <FaPlus />
+            </span>
+            <span className="uppercase ">New Agent</span>
           </button>
         </div>
+
         <div
-          className={`overflow-x-auto ${filteredAgents.length === 0 ? "" : ""}`}
-          style={{ minHeight: tableHeight }}
+          className={`${
+            darkMode
+              ? "bg-[#1e1e1e] text-white rounded-lg shadow-xl"
+              : "bg-white text-black"
+          } p-2 relative shadow-lg rounded-md`}
         >
-          <table
-            className={` ${
-              darkMode ? "text-black bg-white" : "text-black"
-            } sm:w-[200px]  tablet:w-[672px] desktop:w-[930px] xll:w-[1170px] mypc:w-[1200px] mylap:w-[1335px] biglap:w-[2432px]`}
+          <div className="sm:flex sm:justify-between sm:items-center mymob:pr-2 mt-6 mb-10">
+            <input
+              type="text"
+              placeholder="Search Agents..."
+              value={searchquery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+              }}
+              className={`${
+                darkMode ? "text-white" : "text-black"
+              } p-2 ring rounded mymob:ml-1 tablet:ml-3 sm:w-56 mymob:w-60 myiphone:w-68 tablet:w-72 desktop:h-12`}
+            />
+            <button
+              className="text-blue-400 sm:text-2xl cursor-pointer sm:w-6  rounded  hover:text-red-400 tablet:text-3xl desktop:w-8"
+              onClick={handleDeleteSelected}
+            >
+              <MdDeleteOutline />
+            </button>
+          </div>
+
+          <div
+            className={`sm:overflow-x-scroll desktop:overflow-hidden ${
+              AgentData.length < 3 ? "h-[30vh]" : ""
+            }`}
+            style={{ height: `${maxHeight}px` }}
           >
-            <thead>
-              <tr className="text-sm sm:text-base h-18">
-                <th className="w-4">
-                  <input
-                    type="checkbox"
-                    checked={selectAll}
-                    onChange={handleSelectAll}
-                    className="accent-green-300"
-                  />
-                </th>
-                <th className="text-left p-2">Name</th>
-                <th className="text-left p-2">Company</th>
-                <th className="text-left p-2">Role</th>
-                <th className="text-left p-2">Mobile</th>
-                <th className="text-left p-2">Verified</th>
-                <th className="text-left p-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredAgents.length === 0 ? (
+            <table
+              className={`${
+                darkMode ? "bg-[#1e1e1e] text-white" : "bg-white text-black"
+              } sm:w-[200px] font-sans tablet:w-[672px] desktop:w-[930px] xll:w-[1170px] mypc:w-[1200px] mylap:w-[1335px] biglap:w-[2432px]`}
+            >
+              <thead>
                 <tr>
-                  <td
-                    colSpan="10"
-                    className="text-center text-gray-600   tablet:text-2xl font-Inter font-semibold"
-                  >
-                    No Agent Found
-                  </td>
+                  <th className="w-4  text-left px-2 py-[6px]">
+                    <input
+                      type="checkbox"
+                      checked={
+                        SelectedOrder.length === AgentData.length &&
+                        AgentData.length > 0
+                      }
+                      className="accent-green-500"
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          const allIds = AgentData.map((user) => user.id);
+                          setSelectedOrder(allIds);
+                        } else {
+                          setSelectedOrder([]);
+                        }
+                      }}
+                    />
+                  </th>
+                  <th className=" text-left px-2 py-[6px]">Agent Id</th>
+                  <th className="text-left px-2 py-[6px]">Agent name</th>
+                  <th className="text-left px-2 py-[6px]">Company</th>
+                  <th className="text-left px-2 py-[6px]">Role</th>
+                  <th className="text-left px-2 py-[6px] ">Cell no</th>
+                  <th className="text-left px-2 py-[6px]">Verified</th>
+                  <th className="text-left px-2 py-[6px]">Status</th>
                 </tr>
-              ) : (
-                filteredAgents.map((agent, index) => (
-                  <tr key={index}>
-                    <td className=" p-2 text-center">
+              </thead>
+              <tbody>
+                {AgentData.filter((user) => {
+                  return user.Agentname.toLowerCase().includes(
+                    searchquery.toLowerCase()
+                  );
+                }).map((user) => (
+                  <tr key={user.id}>
+                    <td className="w-4 border-b border-slate-400 text-left px-2 py-[6px]">
                       <input
                         type="checkbox"
-                        checked={selectedAgents.includes(index)}
-                        onChange={() => handleSelectAgent(index)}
+                        checked={SelectedOrder.includes(user.id)}
+                        className="accent-green-500"
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedOrder([...SelectedOrder, user.id]);
+                          } else {
+                            setSelectedOrder(
+                              SelectedOrder.filter((id) => id !== user.id)
+                            );
+                          }
+                        }}
                       />
                     </td>
-                    <td className=" p-2 flex items-center gap-2">
-                      <img
-                        src={agent.profile || imgprofile}
-                        alt={agent.name}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                      <span>{agent.name}</span>
+                    <td className="border-b border-slate-400 text-left px-6 py-[6px]">
+                      {user.id}
                     </td>
-                    <td className=" p-2">{agent.company}</td>
-                    <td className=" p-2">{agent.role}</td>
-                    <td className=" p-2">{agent.mobile}</td>
-                    <td className=" p-2">
-                      <input
-                        type="checkbox"
-                        checked={agent.verified}
-                        readOnly
-                        className=" accent-green-500  "
-                      />
+                    <td className="border-b  border-slate-400 text-left px-2 py-[6px]">
+                      <div className="flex items-center">
+                        <td>
+                          {user.id % 2 === 0 ? (
+                            <img
+                              src={img1}
+                              alt=""
+                              className="w-8 h-8 rounded-full"
+                            />
+                          ) : (
+                            <img
+                              src={img2}
+                              alt=""
+                              className="w-8 h-8 rounded-full"
+                            />
+                          )}
+                        </td>
+                        &nbsp; {user.Agentname}
+                      </div>
+                    </td>
+                    <td className="border-b border-slate-400 text-left px-2 py-[6px]">
+                      {user.Company}
+                    </td>
+                    <td className="border-b border-slate-400 text-left px-2 py-[6px]">
+                      {user.Role}
+                    </td>
+                    <td className="border-b  border-slate-400  text-left px-2 py-[6px]">
+                      {user.Phoneno}
+                    </td>
+                    <td className="border-b border-slate-400 text-left px-8 py-[6px]">
+                      {user.Verified}
                     </td>
                     <td
-                      className={` ${
-                        agent.status.toLowerCase() === "active"
-                          ? "text-green-500  text-base "
-                          : agent.status.toLowerCase() === "locked"
-                          ? "text-red-500  text-base  "
-                          : ""
-                      } `}
+                      className={`border-b border-slate-400 text-left  px-2 py-[6px] 
+                        ${
+                          user.Status === "Active"
+                            ? "text-[#46a2f3] "
+                            : user.Status === "Locked"
+                            ? "text-yellow-400"
+                            : "text-black"
+                        } `}
                     >
-                      {agent.status}
+                      {user.Status}
                     </td>
-                    <td className=" p-2 relative ">
+                    <td className="border-b w-3 border-slate-400 text-left px-2 py-[6px] relative">
                       <BsThreeDotsVertical
-                        onClick={() => toggleMenu(index)}
-                        className="cursor-pointer"
+                        onClick={() =>
+                          setOpenMenuId(openMenuId === user.id ? null : user.id)
+                        }
+                        className="cursor-pointer menu-button"
                       />
-                      {openMenuIndex === index && (
+                      {openMenuId === user.id && (
                         <div
-                          ref={menuRef}
-                          className="absolute right-1  bg-white shadow-lg rounded p-2 z-10"
+                          className={`absolute right-0 ${
+                            darkMode
+                              ? "bg-white text-black"
+                              : "bg-white text-black"
+                          } shadow-lg rounded p-2 z-20 menu-options`}
                         >
                           <button
-                            onClick={() => handleEdit(index)}
-                            className="flex items-center p-1 font-Inter hover:bg-gray-200 rounded-md"
+                            onClick={() => {
+                              setEditModal(!showEditModal);
+                              setAgent2(user);
+                            }}
+                            className="w-full flex space-x-1 items-center rounded-md text-left px-4 py-1 hover:bg-gray-200"
                           >
-                            Edit
+                            <span>
+                              <MdModeEditOutline />
+                            </span>
+                            <span>Edit</span>
                           </button>
                           <button
-                            onClick={() => handleDelete(index)}
-                            className="flex  items-center p-1 font-Inter hover:bg-gray-200 rounded-md"
+                            onClick={() => handleDelete(user.id)}
+                            className="flex items-center space-x-1 rounded-md w-full text-left px-4 py-1 hover:bg-gray-200"
                           >
-                            <span className="text-red-600"> Delete</span>
+                            <span>
+                              <MdDelete />
+                            </span>
+                            <span>Delete</span>
                           </button>
                         </div>
                       )}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {AgentData.length === 0 ? (
+            <>
+              <div className="sm:text-xl tablet:text-2xl font-bold font-Inter absolute top-56 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+                No Agents
+              </div>
+            </>
+          ) : (
+            <></>
+          )}
         </div>
-
-        {showAddModal && (
-          <AddAgentModal
-            formData={formData}
-            setFormData={setFormData}
-            formErrors={formErrors}
-            onAdd={handleAdd}
-            onClose={() => setShowAddModal(false)}
-          />
-        )}
-
-        {showEditModal && (
-          <EditAgentModal
-            formData={formData}
-            setFormData={setFormData}
-            formErrors={formErrors}
-            onUpdate={handleUpdate}
-            onClose={() => setShowEditModal(false)}
-          />
-        )}
       </div>
-    </div>
+      {showAddModal && (
+        <AddAgentModal
+          Agentinsert={Agentinsert}
+          setAgentinsert={setAgentinsert}
+          AgentSubmit={AgentSubmit}
+          onClose={() => {
+            setShowModal(!showAddModal);
+          }}
+          darkMode={darkMode}
+        />
+      )}
+      {showEditModal && (
+        <EditAgentModal
+          Agent2={Agent2}
+          setAgent2={setAgent2}
+          AgentData={AgentData}
+          onClose2={() => {
+            setEditModal(!showEditModal);
+          }}
+          AgentfetchData={AgentfetchData}
+          darkMode={darkMode}
+        />
+      )}
+      <ToastContainer />
+    </>
   );
 }
 

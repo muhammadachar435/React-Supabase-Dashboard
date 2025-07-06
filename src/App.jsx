@@ -1,24 +1,13 @@
 import React, { useState } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  createBrowserRouter,
-  createRoutesFromChildren,
-  RouterProvider,
-  Outlet,
-} from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 import Navbar from "./Component/Navbar";
 import ProductDetail from "./Pages/ProductsDetail";
 import CartProvider from "./Pagination/CartProvider";
-import Singleblogdetail from "./BlogComponent/SIngleblogdetail";
 import { ToastContainer } from "react-toastify";
-
 import {
   Dashboard,
   Orders,
   Customers,
-  Products,
   Blogs,
   Agents,
   Loginpage,
@@ -26,56 +15,61 @@ import {
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
-  const Applayout = () => {
-    return (
-      <>
-        <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
-        <Outlet />
-      </>
-    );
-  };
 
-  const navroute = createBrowserRouter(
-    createRoutesFromChildren(
-      <>
-        <Route path="/login" element={<Loginpage />} />
-        <Route element={<Applayout />}>
-          <Route
-            path="/dashboard"
-            element={<Dashboard darkMode={darkMode} />}
-          />
-          <Route path="/orders" element={<Orders />} />
-          <Route
-            path="/customers"
-            darkMode={darkMode}
-            element={<Customers />}
-          />
-          <Route
-            path="/products"
-            element={
-              <CartProvider>
-                <ProductDetail darkMode={darkMode} />
-              </CartProvider>
-            }
-            darkMode={darkMode}
-          />
-          <Route path="/blogs" element={<Blogs />} />
-          <Route
-            path="/blogs/:id"
-            element={<Singleblogdetail />}
-            darkMode={darkMode}
-          />
-          <Route path="/agents" element={<Agents />} />
-
-          <Route path="*" element={<Dashboard />} />
-        </Route>
-      </>
-    )
+  const Applayout = () => (
+    <>
+      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+      <Outlet />
+    </>
   );
+
+  const navroute = createBrowserRouter([
+    {
+      path: "/login",
+      element: <Loginpage />,
+    },
+    {
+      element: <Applayout />,
+      children: [
+        {
+          path: "/dashboard",
+          element: <Dashboard darkMode={darkMode} />,
+        },
+        {
+          path: "/orders",
+          element: <Orders darkMode={darkMode} />,
+        },
+        {
+          path: "/customers",
+          element: <Customers darkMode={darkMode} />,
+        },
+        {
+          path: "/products",
+          element: (
+            <CartProvider>
+              <ProductDetail darkMode={darkMode} />
+            </CartProvider>
+          ),
+        },
+        {
+          path: "/blogs",
+          element: <Blogs darkMode={darkMode} />,
+        },
+
+        {
+          path: "/agents",
+          element: <Agents darkMode={darkMode} />,
+        },
+        {
+          path: "*",
+          element: <Dashboard darkMode={darkMode} />, // ✅ corrected
+        },
+      ],
+    },
+  ]);
 
   return (
     <>
-      {" "}
       <RouterProvider router={navroute} />
       <ToastContainer
         position="top-right"

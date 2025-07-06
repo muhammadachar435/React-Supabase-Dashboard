@@ -1,0 +1,22 @@
+import img1 from "../Pictures/img1.jpg";
+import img2 from "../Pictures/img2.jpg";
+import img3 from "../Pictures/img3.jpg";
+import img4 from "../Pictures/img4.jpg";
+import img5 from "../Pictures/img5.png";
+import redcircle from "../Pictures/circlered.png";
+import bluecircle from "../Pictures/bluecircle .png";
+import greencircle from "../Pictures/circlegreen.png";
+import orangecircle from "../Pictures/orangecircle.png";
+import fb from "../Pictures/facebook.png";
+import google from "../Pictures/google.png";
+import twitter from "../Pictures/twitter.png";
+import likedin from "../Pictures/linkedin.png";
+import Doughjsx from "../Charts/Doughjsx";
+import Radarjsx from "../Charts/Radarjsx";
+import Barchart from "../Charts/Barchart";
+import HorizontalBarChart from "../Charts/HorizontalBar";
+import Salesprice from "../Charts/Salesprice";
+import Checkform from "../Charts/Checkform";
+
+export { img1, img2, img3, img4, img5,Doughjsx,Radarjsx,Barchart,HorizontalBarChart,Salesprice,Checkform};
+export { redcircle, bluecircle, greencircle, orangecircle,fb,google,twitter,likedin,};
