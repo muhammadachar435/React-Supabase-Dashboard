@@ -1,6 +1,6 @@
 import React from "react";
 import imgshop from "../Pictures/shopbag.png";
-import Userimg from "../Pictures/Users.png";
+import Userimg from "../Pictures/users.png";
 import Cartimg from "../Pictures/cart.png";
 import msgimg2 from "../Pictures/msg2.png";
 import msg from "../Pictures/email.png";
