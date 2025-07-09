@@ -9,7 +9,7 @@ import {
 import { Link, useLoaderData, useLocation } from "react-router-dom";
 import SidebarData from "./SidebarData";
 import Logo from "../Pictures/Logo.png";
-import Loginimg from "../Pictures/Loginimg.png";
+import Loginimg from "../Pictures/loginimg.png";
 import Githublogo from "../Pictures/github.png";
 import { FaGreaterThan } from "react-icons/fa";
 import { IoIosSettings } from "react-icons/io";
